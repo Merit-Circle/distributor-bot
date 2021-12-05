@@ -3,6 +3,7 @@ require("dotenv").config();
 import { ethers, BigNumber } from "ethers";
 import { LiquidityMiningManager } from "./LiquidityMiningManager";
 import { LiquidityMiningManager__factory } from "./LiquidityMiningManager__factory";
+var cron = require('node-cron');
 
 const provider = new ethers.providers.InfuraProvider("homestead", process.env.INFURA_KEY);
 
@@ -23,12 +24,12 @@ const check = async () => {
     const timestampInSeconds = BigNumber.from(Math.floor(Date.now() / 1000));
 
     // if lastUpdate + 24 hours has passed current timestamp execute
-    if(lastUpdate.add(INTERVAL).lt(timestampInSeconds) || true) {
+    // if(lastUpdate.add(INTERVAL).lt(timestampInSeconds) || true) {
         console.log("triggering tx");
         await lm.distributeRewards({maxFeePerGas: MAX_GAS_PRICE, maxPriorityFeePerGas: MAX_PRIORITY_FEE});
-    } else {
-        console.log("Not ready yet");
-    }
+    // } else {
+        // console.log("Not ready yet");
+    // }
 }
 
 const start = async() => {
@@ -36,9 +37,13 @@ const start = async() => {
 
     lm = new LiquidityMiningManager__factory(wallet).attach(LIQUIDITY_MINING_MANAGER);
 
-    check();
+    // check();
     // every 5 minutes
-    setInterval(check, 60 * 5 * 1000);
+    // setInterval(check, 60 * 5 * 1000);
+    // every day at 0 0 UTC
+    console.log("Sheduling every day at 01:00");
+    cron.schedule("0 1 * * *", check);
+    check();
 }
 
 start();
